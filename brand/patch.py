@@ -11,6 +11,11 @@ h = h.replace('</head>', splash + '\n  <meta name="theme-color" content="#010101
 body = ('<div id="rk-splash" aria-hidden="true"><div class="s"></div><h1>Reskif Studio</h1><p>le virtuel au service du réel</p></div>\n'
         f'  <!-- Reskif Studio est construit sur FluffyChat {v} (AGPL-3.0), sources : https://github.com/krille-chan/fluffychat -->')
 h = h.replace('<body>', '<body>\n  ' + body, 1)
+# Démarrage de l'appli différé : splash.js décide (membre connecté -> tout de suite ; sinon après « Se connecter »)
+i = h.find("_flutter.loader.load(")
+if i < 0: raise SystemExit("bootstrap Flutter introuvable dans index.html")
+a = h.rfind("<script>", 0, i); b = h.find("</script>", i)
+h = h[:a] + "<script>window.__rkBoot=function(){" + h[a+len("<script>"):b] + "};</script>\n  <script src=\"/splash.js\"></script>" + h[b+len("</script>"):]
 open(p, "w", encoding="utf-8").write(h)
 m = json.load(open(f"{d}/manifest.json"))
 m.update(name="Reskif Studio", short_name="Reskif", background_color="#010101", theme_color="#010101",

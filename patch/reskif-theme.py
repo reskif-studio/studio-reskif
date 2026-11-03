@@ -84,4 +84,20 @@ for rel in ["lib/pages/intro/intro_page_presenter.dart", "lib/pages/login/login.
     if c2 != c: f.write_text(c2); skip += c.count("go('/backup')")
 assert skip >= 3, f"redirection /backup introuvable ({skip}) : vérifier la version de FluffyChat"
 print(f"panneau de sauvegarde ignoré à {skip} endroit(s)")
+# 5. ?autologin=1 (posé par l'écran d'accueil « Se connecter ») : on part directement vers la connexion
+f = root / "lib/pages/intro/intro_page_presenter.dart"; c = f.read_text()
+old = """    if (homeserverUrl == null || session == null) {
+      setState(() {
+        isLoading = false;
+      });
+"""
+assert old in c, "intro_page_presenter : bloc attendu introuvable"
+c = c.replace(old, old + """      if (Uri.base.queryParameters['autologin'] == '1') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _login();
+        });
+      }
+""", 1)
+f.write_text(c)
+print("connexion automatique depuis l'écran d'accueil : ok")
 print(f"thème Reskif appliqué ; mode sombre par défaut dans {n} fichier(s)")

@@ -17,4 +17,5 @@ cp brand/icons/* dist/icons/ && cp brand/icons/Icon-32.png dist/favicon.png
 python3 brand/patch.py dist "$V"
 sed -i 's#<base href="/web/">#<base href="/">#' dist/index.html
 cp brand/_headers dist/_headers
+cp brand/splash.js brand/reskif_logo.svg dist/
 echo "dist prêt ($(find dist -type f | wc -l) fichiers, FluffyChat $V)"
