@@ -11,7 +11,15 @@
   try { var v = localStorage.getItem("flutter.im.fluffychat.store.clients"); loggedIn = !!v && JSON.parse(v).length > 0; } catch (e) {}
   var h = location.hash || "";
   var special = /[?&](code|state|error)=/.test(location.href) || (h && h !== "#" && h !== "#/" && !/^#\/home\/?$/.test(h));
-  if (loggedIn || special) { boot(false); return; }
+  if (loggedIn || special) {
+    boot(false);
+    // rk-watch : après une déconnexion, l'appli revient sur #/home sans recharger la page ;
+    // on recharge alors pour afficher l'écran d'accueil avec la sphère.
+    var noClient = function () { try { var c = localStorage.getItem("flutter.im.fluffychat.store.clients"); return !c || JSON.parse(c).length === 0; } catch (e) { return false; } };
+    var check = function () { if (/^#\/home\/?$/.test(location.hash || "") && noClient() && !/[?&](code|state)=/.test(location.href)) location.replace("/"); };
+    addEventListener("hashchange", check); setInterval(check, 1500);
+    return;
+  }
 
   var css = "#rk-home{position:fixed;inset:0;z-index:10;background:#010101;color:#fff;font-family:Syne,'Helvetica Neue',Arial,sans-serif;transition:opacity .45s ease}" +
     "#rk-home canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}" +
