@@ -1,0 +1,33 @@
+name: Compiler Reskif Studio (FluffyChat habillé)
+on:
+  workflow_dispatch:
+  push:
+    paths: ["patch/**", "FLUFFYCHAT_VERSION", ".github/workflows/build-fork.yml"]
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Code FluffyChat officiel
+        run: git clone --depth 1 --branch "$(cat FLUFFYCHAT_VERSION)" https://github.com/krille-chan/fluffychat.git fc
+      - name: Habillage Reskif
+        run: pip install pyyaml && python3 patch/reskif-theme.py fc
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: fc/.fvmrc
+          cache: true
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+      - name: Compilation web
+        working-directory: fc
+        run: |
+          flutter pub get
+          ./scripts/prepare-web.sh
+          rm -f ./assets/vodozemac/.gitignore
+          flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --release --base-href "/"
+          tar -czf ../fluffychat-reskif-web.tar.gz build/web/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fluffychat-reskif-web
+          path: fluffychat-reskif-web.tar.gz
+          retention-days: 30
