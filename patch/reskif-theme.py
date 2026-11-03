@@ -74,4 +74,14 @@ for f in (root / "lib").rglob("*.dart"):
         c2 = re.sub(r"(themeMode[^;\n]*?)ThemeMode\.system", r"\1ThemeMode.dark", c)
         c2 = c2.replace("?? ThemeMode.system", "?? ThemeMode.dark")
         if c2 != c: f.write_text(c2); n += 1
+# 4. Pas de panneau « sauvegarde des clés / chiffrement » après la connexion : on va directement aux salons.
+#    (Les salons de projet ne sont pas chiffrés ; la sauvegarde reste accessible dans Paramètres.)
+skip = 0
+for rel in ["lib/pages/intro/intro_page_presenter.dart", "lib/pages/login/login.dart", "lib/widgets/matrix.dart", "lib/utils/sign_in_flows/check_homeserver.dart"]:
+    f = root / rel
+    if not f.exists(): continue
+    c = f.read_text(); c2 = c.replace("go('/backup')", "go('/rooms')")
+    if c2 != c: f.write_text(c2); skip += c.count("go('/backup')")
+assert skip >= 3, f"redirection /backup introuvable ({skip}) : vérifier la version de FluffyChat"
+print(f"panneau de sauvegarde ignoré à {skip} endroit(s)")
 print(f"thème Reskif appliqué ; mode sombre par défaut dans {n} fichier(s)")
