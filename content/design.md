@@ -20,7 +20,9 @@ Adresse : https://studio.reskif.org. Base : FluffyChat (version dans FLUFFYCHAT_
 
 Chaud #FFB08A : seulement l'anneau de focus clavier (usage.md). Aucun fond clair : les boutons principaux sont des pilules **blanches à texte nuit** (20,9:1).
 
-Corrigé par rapport à la version précédente : le salon actif avait un fond blanc avec un titre blanc ; les messages en échec étaient en rouge vif sous texte blanc (3,3:1) ; les couleurs des avatars et des noms d'espaces étaient calculées pour un fond clair (texte foncé sur la nuit) ; la sélection de texte était blanche à 50 % sous du texte blanc.
+Corrigé par rapport à la version précédente : le salon actif avait un fond blanc avec un titre blanc ; les messages en échec étaient en rouge vif sous texte blanc (3,3:1) ; les couleurs des avatars et des noms d'espaces étaient calculées pour un fond clair (texte foncé sur la nuit) ; la sélection de texte était blanche à 50 % sous du texte blanc ; la pastille « non lu » sans compteur était bleu nuit sur la nuit (1,6:1, maintenant #A6A1B8, 8,4:1) ; le nom de l'expéditeur au-dessus des bulles était foncé sur la nuit.
+
+Vérification au rendu : compte jetable `reskif-apercu` connecté en headless (Chromium SwiftShader, setup/apercu-login.mjs côté Vincky) sur un déploiement d'aperçu, captures bureau + mobile de l'introduction, de la liste des salons, d'un salon et des paramètres.
 
 ## Typographie
 - **Syne** (500 à 800) : titres, barres d'en-tête, boutons, libellés, infobulles.
