@@ -173,6 +173,19 @@ old = "          ? Colors.redAccent\n          : theme.bubbleColor;"
 assert old in c, "message.dart : couleur d'échec introuvable"
 f.write_text(c.replace(old, "          ? theme.colorScheme.errorContainer\n          : theme.bubbleColor;", 1))
 print("avatars en palette sombre, message en échec lisible")
+# Nom de l'expéditeur au-dessus d'une bulle : FluffyChat prend primaryContainer en sombre (pensé pour sa palette
+# claire). Avec la palette sombre ci-dessus, c'est primary qui est clair → lisible sur la nuit.
+f = root / "lib/pages/chat/events/message.dart"; c = f.read_text()
+c2, k = re.subn(r"\(theme\.brightness ==\s*Brightness\.light\s*\?\s*displayname\s*\.colorScheme\s*\.primary\s*:\s*displayname\s*\.colorScheme\s*\.primaryContainer\)",
+                "displayname.colorScheme.primary", c)
+assert k == 1, f"message.dart : couleur du nom d'expéditeur introuvable ({k})"
+f.write_text(c2)
+# Pastille « non lu » : primaryContainer (1,6:1 sur la nuit) → outline (8,4:1) ; « marqué non lu » : texte onPrimary sur primary.
+f = root / "lib/pages/chat_list/unread_bubble.dart"; c = f.read_text()
+o1 = "            : theme.colorScheme.primaryContainer,\n        borderRadius"; o2 = "                    : theme.colorScheme.onPrimaryContainer,\n                fontSize: 13,"
+assert o1 in c and o2 in c, "unread_bubble.dart : couleurs introuvables"
+f.write_text(c.replace(o1, "            : theme.colorScheme.outline,\n        borderRadius", 1).replace(o2, "                    : theme.colorScheme.onPrimary,\n                fontSize: 13,", 1))
+print("nom d'expéditeur et pastille non-lu lisibles")
 
 # ---------------------------------------------------------------------------------------------
 # 5. Logo de FluffyChat remplacé par le logo carré Reskif (et sa version masque pour les filigranes).
