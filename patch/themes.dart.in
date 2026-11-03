@@ -82,7 +82,7 @@ abstract class FluffyThemes {
   ]) {
     const colorScheme = Reskif.scheme;
     final isColumnMode = FluffyThemes.isColumnMode(context);
-    final base = Typography.material2021(platform: defaultTargetPlatform).white;
+    final base = Typography.material2021().white;
     final textTheme = base
         .copyWith(
           displayLarge: _syne(base.displayLarge, FontWeight.w800, -0.5),
