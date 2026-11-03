@@ -35,7 +35,7 @@ Le froid porte l'outil (le studio, là où l'on travaille) ; le chaud reste rés
 ```
 
 ## Icônes
-Sphère seule sur fond nuit (lisible à 16 px, contrairement au logo texte).
+Logo carré Reskif (celui de reskif.org : RES/KIF blanc sur carré noir arrondi). Version « maskable » : logo réduit à 72 % sur fond nuit.
 
 ## Principes
 1. Ne jamais modifier le code de FluffyChat dans ce dépôt (mises à jour simples, conformité AGPL : lien vers les sources).
