@@ -2,7 +2,7 @@ name: Compiler Reskif Studio (FluffyChat habillé)
 on:
   workflow_dispatch:
   push:
-    paths: ["patch/**", "FLUFFYCHAT_VERSION", ".github/workflows/build-fork.yml"]
+    paths: ["patch/**", "brand/app/**", "FLUFFYCHAT_VERSION", ".github/workflows/build-fork.yml"]
 jobs:
   web:
     runs-on: ubuntu-latest

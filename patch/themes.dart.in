@@ -1,0 +1,345 @@
+// SPDX-FileCopyrightText: 2019-Present Christian Kußowski
+// SPDX-FileCopyrightText: 2019-Present Contributors to FluffyChat
+// SPDX-FileCopyrightText: 2026 Reskif
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//
+// Reskif Studio : thème « sphère » (reskif-commons@cd09ebf).
+// Généré par patch/reskif-theme.py à partir de patch/themes.dart.in (la palette vient du script,
+// où chaque couple texte/fond est vérifié). Un seul univers, la nuit : le thème est toujours sombre.
+
+import 'package:fluffychat/config/app_config.dart';
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
+
+abstract class Reskif {
+  static const Color night = Color(0xFF010101);
+  static const Color ink = Color(0xFFFFFFFF);
+  static const Color line = Color(0x38FFFFFF); // --line : 22 % de blanc, bordure du verre
+  static const Color warm = Color(0xFFFFB08A); // focus clavier (brand/usage.md)
+  static const String display = 'Syne';
+  static const String text = 'Fraunces';
+
+  static const ColorScheme scheme = ColorScheme(
+    brightness: Brightness.dark,
+    /*PALETTE*/
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    surfaceTint: Color(0xFF010101),
+  );
+}
+
+abstract class FluffyThemes {
+  static const double columnWidth = 380.0;
+
+  static const double maxTimelineWidth = columnWidth * 2;
+
+  static const double navRailWidth = 80.0;
+
+  static bool isColumnModeByWidth(double width) =>
+      width > columnWidth * 2 + navRailWidth;
+
+  static bool isColumnMode(BuildContext context) =>
+      isColumnModeByWidth(MediaQuery.sizeOf(context).width);
+
+  static bool isThreeColumnMode(BuildContext context) =>
+      MediaQuery.sizeOf(context).width > FluffyThemes.columnWidth * 3.5;
+
+  // Fond : la nuit, avec la lueur violette puis froide de la sphère.
+  static LinearGradient backgroundGradient(BuildContext context, int alpha) {
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      colors: [
+        Reskif.scheme.tertiaryContainer.withAlpha(alpha),
+        Reskif.night.withAlpha(alpha),
+        Reskif.night.withAlpha(alpha),
+        Reskif.scheme.primaryContainer.withAlpha(alpha),
+      ],
+    );
+  }
+
+  static const Duration animationDuration = Duration(milliseconds: 250);
+  static const Curve animationCurve = Curves.easeInOut;
+
+  static TextStyle _syne(TextStyle? s, FontWeight w, [double ls = 0]) =>
+      (s ?? const TextStyle()).copyWith(
+        fontFamily: Reskif.display,
+        fontWeight: w,
+        letterSpacing: ls,
+      );
+
+  static TextStyle _fraunces(TextStyle? s, FontWeight w, double height) =>
+      (s ?? const TextStyle()).copyWith(
+        fontFamily: Reskif.text,
+        fontWeight: w,
+        height: height,
+      );
+
+  static ThemeData buildTheme(
+    BuildContext context,
+    Brightness brightness, [
+    Color? seed,
+  ]) {
+    const colorScheme = Reskif.scheme;
+    final isColumnMode = FluffyThemes.isColumnMode(context);
+    final base = Typography.material2021(platform: defaultTargetPlatform).white;
+    final textTheme = base
+        .copyWith(
+          displayLarge: _syne(base.displayLarge, FontWeight.w800, -0.5),
+          displayMedium: _syne(base.displayMedium, FontWeight.w800, -0.4),
+          displaySmall: _syne(base.displaySmall, FontWeight.w800, -0.3),
+          headlineLarge: _syne(base.headlineLarge, FontWeight.w700),
+          headlineMedium: _syne(base.headlineMedium, FontWeight.w700),
+          headlineSmall: _syne(base.headlineSmall, FontWeight.w700),
+          titleLarge: _syne(base.titleLarge, FontWeight.w700),
+          titleMedium: _syne(base.titleMedium, FontWeight.w600, 0.1),
+          titleSmall: _syne(base.titleSmall, FontWeight.w600, 0.1),
+          bodyLarge: _fraunces(base.bodyLarge, FontWeight.w400, 1.45),
+          bodyMedium: _fraunces(base.bodyMedium, FontWeight.w400, 1.45),
+          bodySmall: _fraunces(base.bodySmall, FontWeight.w500, 1.4),
+          labelLarge: _syne(base.labelLarge, FontWeight.w600, 0.4),
+          labelMedium: _syne(base.labelMedium, FontWeight.w600, 0.5),
+          labelSmall: _syne(base.labelSmall, FontWeight.w600, 0.6),
+        )
+        .apply(
+          bodyColor: colorScheme.onSurface,
+          displayColor: colorScheme.onSurface,
+        );
+    const pill = StadiumBorder();
+    const buttonText = TextStyle(
+      fontFamily: Reskif.display,
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      letterSpacing: 0.4,
+    );
+    final fieldRadius = BorderRadius.circular(AppConfig.borderRadius / 2);
+    return ThemeData(
+      visualDensity: VisualDensity.standard,
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: colorScheme,
+      fontFamily: Reskif.text,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      canvasColor: colorScheme.surface,
+      dividerColor: colorScheme.outlineVariant,
+      focusColor: Reskif.warm.withAlpha(0x40),
+      hoverColor: Reskif.ink.withAlpha(0x0F),
+      highlightColor: Reskif.ink.withAlpha(0x14),
+      splashColor: Reskif.ink.withAlpha(0x14),
+      iconTheme: const IconThemeData(color: Reskif.ink),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
+        space: 1,
+        thickness: 1,
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          iconColor: colorScheme.onSurface,
+          disabledIconColor: colorScheme.onSurface,
+          selectedBackgroundColor: colorScheme.secondaryContainer,
+          selectedForegroundColor: colorScheme.onSecondaryContainer,
+          side: BorderSide(color: colorScheme.outline),
+          textStyle: buttonText.copyWith(fontSize: 13),
+        ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: colorScheme.primary.withAlpha(0x55),
+        selectionHandleColor: colorScheme.primary,
+        cursorColor: colorScheme.primary,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: colorScheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: colorScheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: fieldRadius,
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        floatingLabelStyle: TextStyle(color: colorScheme.primary),
+        helperStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        errorStyle: TextStyle(color: colorScheme.error),
+        prefixIconColor: colorScheme.onSurfaceVariant,
+        suffixIconColor: colorScheme.onSurfaceVariant,
+        contentPadding: const EdgeInsets.all(12),
+      ),
+      chipTheme: ChipThemeData(
+        showCheckmark: false,
+        backgroundColor: colorScheme.surfaceContainer,
+        selectedColor: colorScheme.secondaryContainer,
+        labelStyle: TextStyle(
+          fontFamily: Reskif.display,
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
+        ),
+        side: BorderSide.none,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConfig.borderRadius),
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        toolbarHeight: isColumnMode ? 72 : 56,
+        surfaceTintColor: colorScheme.surface,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        titleTextStyle: textTheme.titleLarge,
+        actionsPadding: isColumnMode
+            ? const EdgeInsets.symmetric(horizontal: 16.0)
+            : null,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: colorScheme.surface,
+        ),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: colorScheme.surface,
+        indicatorColor: colorScheme.secondaryContainer,
+        selectedIconTheme: IconThemeData(
+          color: colorScheme.onSecondaryContainer,
+        ),
+        unselectedIconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
+        selectedLabelTextStyle: textTheme.labelMedium,
+        unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        indicatorColor: colorScheme.secondaryContainer,
+        labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
+      ),
+      listTileTheme: ListTileThemeData(
+        iconColor: colorScheme.onSurfaceVariant,
+        textColor: colorScheme.onSurface,
+        selectedColor: colorScheme.onSecondaryContainer,
+        selectedTileColor: colorScheme.secondaryContainer,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: textTheme.titleLarge,
+        contentTextStyle: textTheme.bodyMedium,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConfig.borderRadius),
+          side: const BorderSide(color: Reskif.line),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colorScheme.surfaceContainer,
+        modalBackgroundColor: colorScheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppConfig.borderRadius),
+          ),
+          side: BorderSide(color: Reskif.line),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        textStyle: textTheme.bodyMedium,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConfig.borderRadius / 1.5),
+          side: const BorderSide(color: Reskif.line),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: colorScheme.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConfig.borderRadius),
+          side: const BorderSide(color: Reskif.line),
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colorScheme.inverseSurface,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: TextStyle(
+          fontFamily: Reskif.display,
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+          color: colorScheme.onInverseSurface,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Reskif.ink,
+        foregroundColor: Reskif.night,
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        shape: pill,
+        extendedTextStyle: buttonText,
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.onSurface,
+          side: BorderSide(width: 1, color: colorScheme.outline),
+          shape: pill,
+          textStyle: buttonText,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colorScheme.primary,
+          textStyle: buttonText,
+          shape: pill,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(shape: pill, textStyle: buttonText),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        strokeCap: StrokeCap.round,
+        color: colorScheme.primary,
+        refreshBackgroundColor: colorScheme.primaryContainer,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        showCloseIcon: isColumnMode ? true : null,
+        behavior: SnackBarBehavior.floating,
+        width: isColumnMode ? FluffyThemes.columnWidth * 1.5 : null,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onInverseSurface,
+        ),
+      ),
+      // Action principale = pilule pleine : nuit sur blanc (brand/usage.md).
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Reskif.ink,
+          foregroundColor: Reskif.night,
+          disabledBackgroundColor: colorScheme.surfaceContainerHighest,
+          disabledForegroundColor: colorScheme.onSurfaceVariant,
+          elevation: 0,
+          shape: pill,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          textStyle: buttonText.copyWith(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+extension BubbleColorTheme on ThemeData {
+  // Mes messages : dégradé violet → froid (la sphère), encre blanche. Ceux des autres : surfaceContainerHigh.
+  Color get bubbleColor => colorScheme.primaryContainer;
+
+  Color get onBubbleColor => colorScheme.onPrimaryContainer;
+
+  Color get secondaryBubbleColor => HSLColor.fromColor(
+    colorScheme.tertiaryContainer,
+  ).withSaturation(0.5).toColor();
+}
