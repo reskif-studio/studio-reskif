@@ -207,7 +207,8 @@ assert skip >= 3, f"redirection /backup introuvable ({skip}) : vérifier la vers
 print(f"panneau de sauvegarde ignoré à {skip} endroit(s)")
 
 # ---------------------------------------------------------------------------------------------
-# 7. ?autologin=1 (posé par l'écran d'accueil « Se connecter ») : connexion directe.
+# 7. ?autologin=1 (posé par l'écran d'accueil « Se connecter ») : connexion directe, sans montrer la page
+#    d'introduction de FluffyChat (un indicateur de chargement sur la nuit pendant la redirection).
 # ---------------------------------------------------------------------------------------------
 f = root / "lib/pages/intro/intro_page_presenter.dart"; c = f.read_text()
 old = """    if (homeserverUrl == null || session == null) {
@@ -216,11 +217,34 @@ old = """    if (homeserverUrl == null || session == null) {
       });
 """
 assert old in c, "intro_page_presenter : bloc attendu introuvable"
-c = c.replace(old, old + """      if (Uri.base.queryParameters['autologin'] == '1') {
+c = c.replace(old, """    if (homeserverUrl == null || session == null) {
+      final autologin = Uri.base.queryParameters['autologin'] == '1';
+      setState(() {
+        isLoading = autologin;
+      });
+      if (autologin) {
+        // On retire ?autologin=1 de l'adresse : un retour arrière depuis la page de connexion ne relance pas tout.
+        web.window.history.replaceState(null, '', '/#/home');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _login();
         });
       }
 """, 1)
+old = "      (snapshot) {},\n"
+assert old in c, "intro_page_presenter : rappel de connectToHomeserverFlow introuvable"
+c = c.replace(old, """      (snapshot) {
+        if (mounted && (snapshot.hasError || snapshot.connectionState == ConnectionState.done)) {
+          setState(() => isLoading = false);
+        }
+      },
+""", 1)
+assert "' as web;" in c, "intro_page_presenter : import web attendu"
 f.write_text(c)
+# Serveur imposé (reskif.org) : pas de fenêtre « Utiliser 'reskif.org' pour se connecter ».
+f = root / "lib/utils/sign_in_flows/check_homeserver.dart"; c = f.read_text()
+old = "    if ((kIsWeb || PlatformInfos.isLinux) &&\n        (supportsSso"
+assert old in c, "check_homeserver : condition de la fenêtre de consentement introuvable"
+c = c.replace(old, "    if (AppSettings.presetHomeserver.value.isEmpty &&\n        (kIsWeb || PlatformInfos.isLinux) &&\n        (supportsSso", 1)
+f.write_text(c)
+print("fenêtre « Utiliser reskif.org » retirée (serveur imposé)")
 print("connexion automatique depuis l'écran d'accueil : ok")
