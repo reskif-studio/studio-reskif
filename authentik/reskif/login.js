@@ -23,7 +23,13 @@
     "button.pf-c-button.rk-go{padding:16px 22px!important;font-size:13px!important;box-shadow:0 0 30px rgba(0,0,0,.55)}",
     "form.rk-email-form{gap:14px!important}",
     /* code à 6 cases, grandes et centrées */
-    "ak-form-static{display:none!important}", /* ligne « avatar, pseudo, Pas vous ? » */
+    "ak-form-static{display:none!important}",
+    /* étape d'inscription (pseudo + nom) : libellés petits, sur une ligne */
+    "label.rk-fit,label.rk-fit .pf-c-form__label-text{white-space:nowrap!important;letter-spacing:.06em!important;font-size:11px!important}",
+    "label.rk-fit{display:block!important;overflow:hidden;margin-bottom:6px!important}",
+    "label.rk-fit .pf-c-form__label-required{display:none!important}",
+    "form.rk-reg{gap:16px!important}",
+    "form.rk-reg .pf-c-form__group{gap:0!important}", /* ligne « avatar, pseudo, Pas vous ? » */
     "fieldset.rk-code-group{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:18px!important}",
     ".rk-otp-wrap{position:relative;width:100%;margin:8px 0 0}",
     ".rk-otp{display:flex;gap:clamp(8px,2.4vw,14px);justify-content:center;width:100%}",
@@ -128,6 +134,10 @@
       for (var k = 0; k < all.length; k++) { var h2 = all[k].querySelector("h1.pf-c-title.rk-sr"); if (h2) h2.classList.remove("rk-sr"); }
     }
     if (email && !code) markReady(email);
+    // Étape d'inscription (nouveau compte) : pseudo + nom affiché
+    var nameIn = null;
+    for (var ni = 0; ni < all.length && !nameIn; ni++) nameIn = all[ni].querySelector("form input[name=name]");
+    if (nameIn && !code && !email) setupRegister(nameIn, all);
     if (code) {
       setupCode(code);
       var croot = code.getRootNode(), cform = code.form || code.closest("form");
@@ -181,12 +191,31 @@
           var all = roots(document), ready = false;
           for (var i = 0; i < all.length; i++) {
             var c = all[i].querySelector("input[name=code]"), e = all[i].querySelector(".pf-m-error");
-            if ((c && c.dataset.rk) || e) ready = true;
+            var rg = all[i].querySelector("form.rk-reg");
+            if ((c && c.dataset.rk) || e || rg) ready = true;
           }
           if (ready || Date.now() - t0 > 3500) { transitionToNext.on = false; res(); } else setTimeout(wait, 40);
         })();
       });
     });
+  }
+
+  function fitLabel(lab) {
+    lab.classList.add("rk-fit");
+    var size = 11;
+    lab.style.fontSize = size + "px";
+    while (lab.scrollWidth > lab.clientWidth + 1 && size > 8) { size -= 0.5; lab.style.setProperty("font-size", size + "px", "important"); var t = lab.querySelector(".pf-c-form__label-text"); if (t) t.style.setProperty("font-size", size + "px", "important"); }
+  }
+  function setupRegister(nameIn, all) {
+    var form = nameIn.form || nameIn.closest("form"), root = nameIn.getRootNode();
+    if (!form) return;
+    form.classList.add("rk-reg");
+    var labs = form.querySelectorAll("label.pf-c-form__label");
+    for (var i = 0; i < labs.length; i++) { labs[i].classList.remove("rk-sr"); fitLabel(labs[i]); }
+    var btn = form.querySelector("button[type=submit]");
+    if (btn) { btn.classList.add("rk-go"); if (btn.textContent.trim() !== "S'inscrire") btn.textContent = "S'inscrire"; }
+    for (var q = 0; q < all.length; q++) { var t = all[q].querySelector("h1.pf-c-title"); if (t) t.classList.add("rk-sr"); }
+    markReady(nameIn);
   }
 
   function start() {
