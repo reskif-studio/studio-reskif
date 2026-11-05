@@ -20,10 +20,13 @@
     "input.pf-c-form-control.rk-email::placeholder{color:rgba(255,255,255,.62)!important;font-style:italic}",
     "button.pf-c-button.rk-go{padding:16px 22px!important;font-size:13px!important;box-shadow:0 0 30px rgba(0,0,0,.55)}",
     "form.rk-email-form{gap:14px!important}",
-    /* code à 6 cases */
-    ".rk-otp-wrap{position:relative;margin:6px 0 4px}",
-    ".rk-otp{display:flex;gap:clamp(6px,2vw,10px);justify-content:center}",
-    ".rk-otp span{flex:1 1 0;max-width:56px;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:rgba(255,255,255,.04);font:700 clamp(22px,6vw,30px)/1 Syne,'Helvetica Neue',Arial,sans-serif;color:#fff;transition:border-color .15s}",
+    /* code à 6 cases, grandes et centrées */
+    "ak-form-static{display:none!important}", /* ligne « avatar, pseudo, Pas vous ? » */
+    "fieldset.rk-code-group{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:18px!important}",
+    ".rk-otp-wrap{position:relative;width:100%;margin:8px 0 0}",
+    ".rk-otp{display:flex;gap:clamp(8px,2.4vw,14px);justify-content:center;width:100%}",
+    ".rk-otp span{flex:1 1 0;max-width:64px;min-width:0;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.4);border-radius:14px;background:rgba(1,1,1,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font:700 clamp(26px,7.5vw,36px)/1 Syne,'Helvetica Neue',Arial,sans-serif;color:#fff;transition:border-color .15s}",
+    ".pf-c-form__helper-text.rk-sent{text-align:center!important;font:300 italic clamp(17px,4.6vw,20px)/1.45 Fraunces,Georgia,serif!important;color:#fff!important;text-shadow:0 0 12px rgba(0,0,0,.85);margin:0!important}",
     ".rk-otp span.on{border-color:#fff;outline:2px solid #ffb08a;outline-offset:2px}",
     ".rk-otp span.full{border-color:rgba(255,255,255,.7)}",
     "input.pf-c-form-control.rk-code,input.rk-code{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;font-size:16px!important;color:transparent!important;caret-color:transparent!important;background:transparent!important;border:0!important;outline:0!important;z-index:2;cursor:text;letter-spacing:0;padding:0!important}",
@@ -101,7 +104,7 @@
       var err = r.querySelector(".pf-c-form__helper-text.pf-m-error, .pf-m-error");
       if (err && code) { var w = code.closest(".rk-otp-wrap"); if (w) w.classList.add("err"); }
     }
-    if (main) main.classList.toggle("rk-bare", !!email && !code);
+    if (main) main.classList.add("rk-bare");
     if (email && !email.dataset.rk) {
       email.dataset.rk = "1";
       email.classList.add("rk-email");
@@ -122,22 +125,39 @@
     } else {
       for (var k = 0; k < all.length; k++) { var h2 = all[k].querySelector("h1.pf-c-title.rk-sr"); if (h2) h2.classList.remove("rk-sr"); }
     }
+    if (email && !code) markReady(email);
     if (code) {
       setupCode(code);
       var croot = code.getRootNode(), cform = code.form || code.closest("form");
-      // Textes d'Authentik restés en anglais sur cette étape
-      var walker = document.createTreeWalker(croot, NodeFilter.SHOW_TEXT), tn;
-      while ((tn = walker.nextNode())) {
-        var m = /verification token has been sent to your configured email address:?\s*(\S*)/i.exec(tn.nodeValue);
-        if (m) tn.nodeValue = "Nous venons de vous envoyer un code à 6 chiffres" + (m[1] ? " (" + m[1] + ")" : "") + ".";
+      var grp = code.closest("fieldset") || code.closest(".pf-c-form__group"); if (grp) grp.classList.add("rk-code-group");
+      // Texte « code envoyé » (Authentik, FR ou EN) : réécrit, centré, plus grand, sous les cases
+      var help = croot.querySelector(".pf-c-form__helper-text:not(.pf-m-error)");
+      if (help && !help.dataset.rk) {
+        var m = /(?:adresse|address)\s*:?\s*(\S+@\S+)/i.exec(help.textContent);
+        help.textContent = "Un code à 6 chiffres vient d'être envoyé" + (m ? " à " + m[1].replace(/\.$/, "") : " à votre adresse e-mail") + ".";
+        help.dataset.rk = "1"; help.classList.add("rk-sent");
+        var w2 = code.closest(".rk-otp-wrap"); if (w2 && w2.parentNode === help.parentNode) w2.parentNode.insertBefore(help, w2);
       }
       var cb = cform && cform.querySelector("button[type=submit]");
       if (cb && cb.textContent.trim() !== "Valider") cb.textContent = "Valider";
-      for (var q = 0; q < all.length; q++) { var t = all[q].querySelector("h1.pf-c-title"); if (t && t.textContent.trim() !== "Votre code") t.textContent = "Votre code"; }
+      for (var q = 0; q < all.length; q++) { var t = all[q].querySelector("h1.pf-c-title"); if (t) t.classList.add("rk-sr"); }
+      markReady(code);
       var cr = code.getRootNode(), cl = cr.querySelector("label[for='" + code.id + "']");
       if (cl) cl.classList.add("rk-sr");
     }
   }
+
+  // Hôte de l'étape (enfant direct de <main>) qui contient l'élément : seul lui est rendu visible (.rk-ok, voir CSS de marque).
+  function stageHost(node) {
+    var n = node;
+    while (n) {
+      var p = n.parentElement || (n.parentNode && n.parentNode.host) || (n.getRootNode && n.getRootNode().host);
+      if (p && p.tagName === "MAIN") return n;
+      n = n.parentElement || (n.getRootNode && n.getRootNode() !== document ? n.getRootNode().host : null);
+    }
+    return null;
+  }
+  function markReady(input) { var h = stageHost(input); if (h && !h.classList.contains("rk-ok")) h.classList.add("rk-ok"); }
 
   function start() {
     var bg = document.createElement("canvas"); bg.id = "rk-bg"; bg.setAttribute("aria-hidden", "true");
@@ -149,7 +169,7 @@
     if (window.RkSphere) window.RkSphere(bg);
     scan();
     new MutationObserver(function () { clearTimeout(start.t); start.t = setTimeout(scan, 30); }).observe(document.body, { childList: true, subtree: true });
-    setInterval(scan, 400); // les changements dans les shadow DOM ne remontent pas jusqu'à body
+    setInterval(scan, 80); // les changements dans les shadow DOM ne remontent pas jusqu'à body
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
