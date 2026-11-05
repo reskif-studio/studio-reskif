@@ -5,6 +5,11 @@
      envoi automatique au 6e chiffre.
    Authentik dessine dans des shadow DOM : on parcourt les racines et on y injecte nos styles. */
 (function () {
+  // Page de connexion ouverte sans venir de Reskif Studio (rechargée, mise en favori, ouverte pendant un redémarrage) :
+  // sans les paramètres OIDC, la connexion n'aurait nulle part où revenir → on repart de studio.reskif.org.
+  if (/^\/if\/flow\/reskif-email-login\/?$/.test(location.pathname) && !/[?&](client_id|next)=/.test(location.search)) {
+    location.replace("https://studio.reskif.org/"); return;
+  }
   var STYLE = [
     ".rk-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:-1px!important;padding:0!important;border:0!important}",
     ".rk-hide{display:none!important}",

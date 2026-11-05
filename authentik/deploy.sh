@@ -3,6 +3,7 @@
 # authentik/if-flow.html -> /opt/authentik/custom-templates/if/flow.html
 # brand/sphere.js + authentik/reskif/login.js -> /opt/authentik/custom-templates/reskif/ (entourés de {% verbatim %})
 # Le serveur Authentik garde les gabarits en cache : redémarrage du conteneur authentik-server-1 (~30 s).
+# ATTENTION : une connexion en cours à ce moment-là est perdue (incident du 05/11 05:44). Éviter pendant les essais de Julien.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 H=ubuntu@195.15.213.24
