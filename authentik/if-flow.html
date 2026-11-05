@@ -37,6 +37,8 @@
 {% endblock %}
 
 {% block head %}
+<style id="rk-early">html,body{background:#130026!important}#rk-logo{position:fixed;left:50%;top:clamp(48px,15vh,140px);width:clamp(150px,42vw,230px);height:calc(clamp(150px,42vw,230px) * 0.1934);transform:translateX(-50%);z-index:2147483001;view-transition-name:rk-logo;pointer-events:none;filter:drop-shadow(0 0 16px rgba(0,0,0,.5))}</style>
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js">
 <script src="{% versioned_script 'dist/flow/FlowInterface-%v.js' %}" type="module"></script>
 {# Reskif : sphère + habillage de connexion (studio-reskif/authentik/). #}
 <script>{% include "reskif/sphere.js" %}</script>
@@ -49,6 +51,7 @@
 {% endblock %}
 
 {% block body %}
+<img id="rk-logo" src="https://studio.reskif.org/reskif_logo_clair.svg" alt="Reskif" width="512" height="99">
 <ak-skip-to-content></ak-skip-to-content>
 <ak-message-container></ak-message-container>
 <ak-drawer id="flow-drawer">

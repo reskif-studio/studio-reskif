@@ -1,12 +1,8 @@
 
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
-    html,body{margin:0;height:100%;background:#010101;color:#fff}
-    #rk-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;font-family:"Syne","Helvetica Neue",Arial,sans-serif;z-index:0}
-    #rk-splash .s{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#fff 0%,#9cc0ff 22%,#4d8dff 48%,#5b1cff 78%,#1a0a4d 100%);box-shadow:0 0 70px 6px rgba(156,192,255,.4);animation:rk 3.2s ease-in-out infinite}
-    #rk-splash h1{margin:.4rem 0 0;font-weight:700;font-size:1.05rem;letter-spacing:.42em;text-transform:uppercase}
-    #rk-splash p{margin:0;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:.95rem;opacity:.6}
-    @keyframes rk{0%,100%{transform:scale(1);box-shadow:0 0 70px 6px rgba(156,192,255,.4)}50%{transform:scale(1.04);box-shadow:0 0 95px 12px rgba(156,192,255,.55)}}
-    @media (prefers-reduced-motion:reduce){#rk-splash .s{animation:none}}
+    html,body{margin:0;height:100%;background:#130026}
+    /* même place que RkStage (brand/sphere.js) : le logo est là dès le premier affichage */
+    #rk-logo{position:fixed;left:50%;top:clamp(48px,15vh,140px);width:clamp(150px,42vw,230px);height:calc(clamp(150px,42vw,230px) * 0.1934);transform:translateX(-50%);z-index:2147483001;view-transition-name:rk-logo;pointer-events:none;filter:drop-shadow(0 0 16px rgba(0,0,0,.5))}
   </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital@1&family=Syne:wght@700&display=swap" rel="stylesheet">
+  <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js">

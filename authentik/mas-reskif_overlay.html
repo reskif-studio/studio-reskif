@@ -1,0 +1,16 @@
+{# Reskif : page qui s'envoie toute seule → on ne la montre pas. Même décor que studio.reskif.org et id.reskif.org
+   (fond, logo à la même place, sphère réglée sur l'heure ; RkStage de studio.reskif.org/sphere.js). Filet de 5 s. #}
+<style>
+  html,body{background:#130026!important}
+  .layout-container{visibility:hidden}
+  #rk-logo{position:fixed;left:50%;top:clamp(48px,15vh,140px);width:clamp(150px,42vw,230px);height:calc(clamp(150px,42vw,230px) * 0.1934);transform:translateX(-50%);z-index:2147483001;view-transition-name:rk-logo;pointer-events:none;filter:drop-shadow(0 0 16px rgba(0,0,0,.5))}
+  html.rk-reveal .layout-container{visibility:visible} html.rk-reveal #rk-stage,html.rk-reveal #rk-logo{display:none}
+</style>
+<script src="https://studio.reskif.org/sphere.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  var l=document.createElement("img");l.id="rk-logo";l.alt="";l.src="https://studio.reskif.org/reskif_logo_clair.svg";document.body.appendChild(l);
+  if(window.RkStage)window.RkStage({front:true,sphere:false});
+  setTimeout(function(){document.documentElement.classList.add("rk-reveal");},5000);
+});
+</script>

@@ -13,8 +13,10 @@
     ".pf-c-login::before,.pf-c-login::after{display:none!important;background:none!important}",
     /* panneau transparent pour l'étape e-mail */
     "main.rk-bare{background:transparent!important;border:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;max-width:440px!important;margin:0 auto!important}",
-    "main.rk-bare .pf-c-brand{padding-bottom:8px!important}",
-    "main.rk-bare img.branding-logo{filter:drop-shadow(0 0 18px rgba(0,0,0,.6))}",
+    /* logo d'Authentik remplacé par celui du décor commun (#rk-logo, même place que sur studio.reskif.org) */
+    ".pf-c-login__main .pf-c-brand,.pf-c-login__main-header.pf-c-brand{display:none!important}",
+    ".pf-c-login{align-content:start!important;align-items:start!important;justify-content:center!important;padding-top:var(--rk-content-top,180px)!important;min-height:100vh;box-sizing:border-box}",
+    ".pf-c-login__container{padding-top:0!important;align-content:start!important}",
     /* champ e-mail sur la sphère : verre sombre opaque pour le contraste */
     "input.pf-c-form-control.rk-email{background:rgba(1,1,1,.78)!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:999px!important;text-align:center;font-size:17px!important;padding:15px 20px!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}",
     "input.pf-c-form-control.rk-email::placeholder{color:rgba(255,255,255,.62)!important;font-style:italic}",
@@ -80,7 +82,7 @@
       if (v.length === 6 && v !== sent) {
         sent = v;
         var form = input.form || input.closest("form");
-        if (form) setTimeout(function () { form.requestSubmit ? form.requestSubmit() : form.submit(); }, 120);
+        if (form) setTimeout(function () { if (window.__rkStage) window.__rkStage.dim(true); form.requestSubmit ? form.requestSubmit() : form.submit(); }, 120);
       }
       if (v.length < 6) sent = "";
     };
@@ -102,7 +104,7 @@
       code = code || r.querySelector("input[name=code]");
       main = main || r.querySelector("main.pf-c-login__main");
       var err = r.querySelector(".pf-c-form__helper-text.pf-m-error, .pf-m-error");
-      if (err && code) { var w = code.closest(".rk-otp-wrap"); if (w) w.classList.add("err"); }
+      if (err && code) { var w = code.closest(".rk-otp-wrap"); if (w) w.classList.add("err"); if (window.__rkStage) window.__rkStage.dim(false); }
     }
     if (main) main.classList.add("rk-bare");
     if (email && !email.dataset.rk) {
@@ -131,12 +133,20 @@
       var croot = code.getRootNode(), cform = code.form || code.closest("form");
       var grp = code.closest("fieldset") || code.closest(".pf-c-form__group"); if (grp) grp.classList.add("rk-code-group");
       // Texte « code envoyé » (Authentik, FR ou EN) : réécrit, centré, plus grand, sous les cases
-      var help = croot.querySelector(".pf-c-form__helper-text:not(.pf-m-error)");
-      if (help && !help.dataset.rk) {
-        var m = /(?:adresse|address)\s*:?\s*(\S+@\S+)/i.exec(help.textContent);
-        help.textContent = "Un code à 6 chiffres vient d'être envoyé" + (m ? " à " + m[1].replace(/\.$/, "") : " à votre adresse e-mail") + ".";
-        help.dataset.rk = "1"; help.classList.add("rk-sent");
-        var w2 = code.closest(".rk-otp-wrap"); if (w2 && w2.parentNode === help.parentNode) w2.parentNode.insertBefore(help, w2);
+      // Texte « code envoyé » d'Authentik (étape de validation ou de première configuration, FR ou EN) :
+      // l'original est masqué, on affiche le nôtre, centré, au-dessus des cases.
+      var w2 = code.closest(".rk-otp-wrap");
+      if (w2 && !croot.querySelector(".rk-sent")) {
+        var cands = croot.querySelectorAll(".pf-c-form__helper-text:not(.pf-m-error), p, .pf-c-form__group-text, div"), help = null;
+        for (var hc = 0; hc < cands.length; hc++) {
+          var tx = cands[hc].textContent;
+          if (cands[hc].children.length === 0 && tx.length < 300 && /(envoy|sent)/i.test(tx) && /(code|token|jeton)/i.test(tx)) { help = cands[hc]; break; }
+        }
+        var m = help && /(\S+@\S+)/.exec(help.textContent);
+        var mine = document.createElement("div"); mine.className = "pf-c-form__helper-text rk-sent";
+        mine.textContent = "Un code à 6 chiffres vient d'être envoyé" + (m ? " à " + m[1].replace(/[.,]$/, "") : " à votre adresse e-mail") + ".";
+        w2.parentNode.insertBefore(mine, w2);
+        if (help) help.classList.add("rk-hide");
       }
       var cb = cform && cform.querySelector("button[type=submit]");
       if (cb && cb.textContent.trim() !== "Valider") cb.textContent = "Valider";
@@ -159,14 +169,40 @@
   }
   function markReady(input) { var h = stageHost(input); if (h && !h.classList.contains("rk-ok")) h.classList.add("rk-ok"); }
 
+  // Passage e-mail → code : transition de vue (View Transitions API). Le navigateur fige l'écran e-mail,
+  // attend que l'étape code soit habillée, puis fond l'un dans l'autre ; logo et sphère ne bougent pas.
+  function transitionToNext() {
+    if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches || transitionToNext.on) return;
+    transitionToNext.on = true;
+    var t0 = Date.now();
+    document.startViewTransition(function () {
+      return new Promise(function (res) {
+        (function wait() {
+          var all = roots(document), ready = false;
+          for (var i = 0; i < all.length; i++) {
+            var c = all[i].querySelector("input[name=code]"), e = all[i].querySelector(".pf-m-error");
+            if ((c && c.dataset.rk) || e) ready = true;
+          }
+          if (ready || Date.now() - t0 > 3500) { transitionToNext.on = false; res(); } else setTimeout(wait, 40);
+        })();
+      });
+    });
+  }
+
   function start() {
-    var bg = document.createElement("canvas"); bg.id = "rk-bg"; bg.setAttribute("aria-hidden", "true");
-    document.body.insertBefore(bg, document.body.firstChild);
     var s = document.createElement("style");
-    s.textContent = "html,body{background:#010101!important}#rk-bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block}" +
-      "ak-drawer,ak-message-container{position:relative;z-index:1}";
+    s.textContent = "ak-drawer,ak-message-container{position:relative;z-index:1}";
     document.head.appendChild(s);
-    if (window.RkSphere) window.RkSphere(bg);
+    if (window.RkStage) window.RkStage();
+    document.addEventListener("click", function (e) {
+      var path = e.composedPath ? e.composedPath() : [];
+      for (var i = 0; i < path.length; i++) if (path[i].classList && path[i].classList.contains("rk-go")) { transitionToNext(); break; }
+    }, true);
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      var t = e.composedPath ? e.composedPath()[0] : e.target;
+      if (t && t.classList && t.classList.contains("rk-email") && t.value) transitionToNext();
+    }, true);
     scan();
     new MutationObserver(function () { clearTimeout(start.t); start.t = setTimeout(scan, 30); }).observe(document.body, { childList: true, subtree: true });
     setInterval(scan, 80); // les changements dans les shadow DOM ne remontent pas jusqu'à body

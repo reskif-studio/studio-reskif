@@ -346,7 +346,7 @@ window.RkSphere = function (canvas, opts) {
       if (d < 1) { var k = Math.pow(1 - d, 1.4); return { speed: 1 + k * 7, agitation: k }; }
       return { speed: 1 - smooth(1, 2.4, d) * 0.85, agitation: 0 };
     }
-    var last = Date.now();
+    var last = Date.now(), shown = false, extra = 0, CLOCK_DIR = new THREE.Vector3(0.3, 0.2, -0.93).normalize();
     function tick() {
       if (stop) { renderer.dispose(); return; }
       var now = Date.now(), delta = Math.min(now - last, 60); last = now;
@@ -356,16 +356,52 @@ window.RkSphere = function (canvas, opts) {
       material.uniforms.uDisplacementStrength.value = variations.volume.current;
       material.uniforms.uDistortionStrength.value = variations.highLevel.current;
       material.uniforms.uFresnelMultiplier.value = variations.mediumLevel.current;
-      var ot = el2 * 0.3;
-      offset.spherical.phi = ((Math.sin(ot * 0.001) * Math.sin(ot * 0.00321)) * 0.5 + 0.5) * Math.PI;
-      offset.spherical.theta = ((Math.sin(ot * 0.0001) * Math.sin(ot * 0.000321)) * 0.5 + 0.5) * Math.PI * 2;
-      offset.direction.setFromSpherical(offset.spherical); offset.direction.multiplyScalar(tf * 2);
-      material.uniforms.uOffset.value.add(offset.direction); material.uniforms.uTime.value += el2;
-      var o = material.uniforms.uOffset.value; if (!isFinite(o.x + o.y + o.z + material.uniforms.uTime.value)) { o.set(0, 0, 0); material.uniforms.uTime.value = 0; }
+      // Horloge commune : la forme de la sphère dépend de l'heure, pas du moment où la page a été ouverte.
+      // Deux pages (studio.reskif.org, id.reskif.org, auth.reskif.org) affichent donc la même sphère au même instant.
+      extra += delta * (tf - 0.0003);
+      var T = Date.now() % 3600000;
+      material.uniforms.uTime.value = T * 0.0003 + extra;
+      material.uniforms.uOffset.value.copy(CLOCK_DIR).multiplyScalar(T * 0.000036 + extra * 0.12);
       if (canvas.clientWidth && (Math.abs(canvas.clientWidth - config.width) > 1 || Math.abs(canvas.clientHeight - config.height) > 1)) resize();
-      composer.render(); requestAnimationFrame(tick);
+      composer.render(); if (!shown) { shown = true; canvas.classList.add("rk-on"); } requestAnimationFrame(tick);
     }
     tick();
   }
   return { stop: function () { stop = true; } };
+};
+
+/* Décor commun des pages de connexion : fond, sphère et logo à la même place sur les trois sites.
+   RkStage({ front: true }) : le décor passe devant la page (attente sur studio.reskif.org). */
+window.RkStage = function (opts) {
+  opts = opts || {};
+  if (window.__rkStage) return window.__rkStage;
+  var d = document;
+  var css = ":root{--rk-bg:#130026;--rk-logo-w:clamp(150px,42vw,230px);--rk-logo-h:calc(var(--rk-logo-w) * 0.1934);" +
+    "--rk-logo-top:clamp(48px,15vh,140px);--rk-content-top:calc(var(--rk-logo-top) + var(--rk-logo-h) + 40px)}" +
+    "html,body{background:var(--rk-bg)!important}" +
+    "#rk-stage{position:fixed;inset:0;z-index:" + (opts.front ? 2147483000 : 0) + ";background:var(--rk-bg);view-transition-name:rk-stage}" +
+    "#rk-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s ease}#rk-stage canvas.rk-on{opacity:1}#rk-stage.rk-dim canvas{opacity:0!important;transition-duration:.35s}" +
+    "#rk-logo{position:fixed;left:50%;top:var(--rk-logo-top);width:var(--rk-logo-w);height:var(--rk-logo-h);transform:translateX(-50%);" +
+    "z-index:2147483001;view-transition-name:rk-logo;pointer-events:none;filter:drop-shadow(0 0 16px rgba(0,0,0,.5))}" +
+    "@view-transition{navigation:auto}" +
+    "::view-transition-group(rk-logo),::view-transition-group(rk-stage){animation-duration:0s}" +
+    "::view-transition-old(root),::view-transition-new(root){animation-duration:.28s}" +
+    "@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}";
+  var st = d.createElement("style"); st.id = "rk-stage-css"; st.textContent = css; d.head.appendChild(st);
+  var stage = d.getElementById("rk-stage") || d.createElement("div"); stage.id = "rk-stage"; stage.setAttribute("aria-hidden", "true");
+  var canvas = stage.querySelector("canvas") || d.createElement("canvas"); if (!canvas.parentNode) stage.appendChild(canvas);
+  var logo = d.getElementById("rk-logo") || d.createElement("img");
+  logo.id = "rk-logo"; logo.alt = "Reskif"; if (!logo.src) logo.src = "https://studio.reskif.org/reskif_logo_clair.svg";
+  var mount = function () {
+    if (!stage.parentNode) d.body.insertBefore(stage, d.body.firstChild);
+    if (!logo.parentNode) d.body.appendChild(logo);
+  };
+  if (d.body) mount(); else d.addEventListener("DOMContentLoaded", mount);
+  var sphere = opts.sphere === false ? { stop: function () {} } : window.RkSphere(canvas);
+  window.__rkStage = {
+    stage: stage, logo: logo,
+    dim: function (on) { stage.classList.toggle("rk-dim", !!on); },
+    remove: function () { sphere.stop(); stage.remove(); logo.remove(); st.remove(); window.__rkStage = null; }
+  };
+  return window.__rkStage;
 };

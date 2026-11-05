@@ -7,8 +7,8 @@ h = re.sub(r'<meta name="description" content="[^"]*">', '<meta name="descriptio
 h = h.replace('content="FluffyChat"', 'content="Reskif Studio"').replace('<title>FluffyChat</title>', '<title>Reskif Studio</title>')
 h = h.replace('content="black"', 'content="black-translucent"')
 splash = open("brand/splash-head.html", encoding="utf-8").read()
-h = h.replace('</head>', splash + '\n  <meta name="theme-color" content="#010101">\n</head>', 1)
-body = ('<div id="rk-splash" aria-hidden="true"><div class="s"></div><h1>Reskif Studio</h1><p>le virtuel au service du réel</p></div>\n'
+h = h.replace('</head>', splash + '\n  <meta name="theme-color" content="#130026">\n</head>', 1)
+body = ('<img id="rk-logo" src="/reskif_logo_clair.svg" alt="Reskif" width="512" height="99">\n'
         f'  <!-- Reskif Studio est construit sur FluffyChat {v} (AGPL-3.0), sources : https://github.com/krille-chan/fluffychat -->')
 h = h.replace('<body>', '<body>\n  ' + body, 1)
 # Démarrage de l'appli différé : splash.js décide (connecté : tout de suite ; sinon tout de suite en ?autologin=1, sous la sphère)
@@ -27,6 +27,6 @@ inner = inner.replace(LOAD, "(function (f) { if (document.readyState === 'comple
 h = h[:a] + "<script>window.__rkBoot=function(){" + inner + "};</script>\n  <script src=\"/sphere.js\"></script>\n  <script src=\"/splash.js\"></script>" + h[b+len("</script>"):]
 open(p, "w", encoding="utf-8").write(h)
 m = json.load(open(f"{d}/manifest.json"))
-m.update(name="Reskif Studio", short_name="Reskif", background_color="#010101", theme_color="#010101",
+m.update(name="Reskif Studio", short_name="Reskif", background_color="#130026", theme_color="#130026",
          description="La messagerie des projets Reskif", lang="fr", start_url="/")
 json.dump(m, open(f"{d}/manifest.json", "w"), ensure_ascii=False, indent=2)
